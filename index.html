@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Mobile-Friendly Handwritten Digit Classifier</title>
+<title> Handwritten Digit Classifier</title>
 <style>
   :root {
     --bg: #f6f7fb;
@@ -15,263 +15,79 @@
     --accent-dark: #1d4ed8;
     --ok: #059669;
     --warn: #d97706;
+    --bad: #dc2626;
   }
   * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: var(--bg);
-    color: var(--ink);
-    min-height: 100vh;
-  }
-  header {
-    padding: 18px 16px 10px;
-    text-align: center;
-  }
-  h1 {
-    font-size: clamp(1.35rem, 5vw, 2rem);
-    margin: 0 0 6px;
-    line-height: 1.15;
-  }
-  .subtitle {
-    margin: 0 auto;
-    max-width: 780px;
-    color: var(--muted);
-    font-size: 0.96rem;
-    line-height: 1.45;
-  }
-  main {
-    width: min(1100px, 100%);
-    margin: 0 auto;
-    padding: 12px;
-    display: grid;
-    grid-template-columns: minmax(300px, 420px) 1fr;
-    gap: 14px;
-  }
-  .card {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    padding: 14px;
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
-  }
+  body { margin: 0; min-height: 100vh; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); }
+  header { padding: 18px 16px 10px; text-align: center; }
+  h1 { margin: 0 0 6px; font-size: clamp(1.35rem, 5vw, 2rem); line-height: 1.15; }
+  .subtitle { max-width: 840px; margin: 0 auto; color: var(--muted); font-size: 0.96rem; line-height: 1.45; }
+  main { width: min(1120px, 100%); margin: 0 auto; padding: 12px; display: grid; grid-template-columns: minmax(300px, 420px) 1fr; gap: 14px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06); }
   .draw-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-  #drawCanvas {
-    width: min(86vw, 360px);
-    height: min(86vw, 360px);
-    max-width: 360px;
-    max-height: 360px;
-    background: #fff;
-    border: 2px solid #cbd5e1;
-    border-radius: 20px;
-    box-shadow: inset 0 0 0 1px #f1f5f9;
-    touch-action: none;
-    cursor: crosshair;
-  }
-  .controls {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-  button, select {
-    min-height: 44px;
-    border-radius: 12px;
-    border: 1px solid #cbd5e1;
-    background: #fff;
-    color: var(--ink);
-    font-size: 0.98rem;
-    font-weight: 650;
-    padding: 9px 12px;
-  }
-  button { cursor: pointer; }
-  button.active {
-    background: #dbeafe;
-    border-color: var(--accent);
-    color: var(--accent-dark);
-  }
-  button.primary {
-    background: var(--accent);
-    color: #fff;
-    border-color: var(--accent);
-  }
-  button.primary:active { background: var(--accent-dark); }
-  button.secondary:active, button.small:active { transform: translateY(1px); }
-  .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; }
+  #drawCanvas { width: min(86vw, 360px); height: min(86vw, 360px); max-width: 360px; max-height: 360px; background: #fff; border: 2px solid #cbd5e1; border-radius: 20px; box-shadow: inset 0 0 0 1px #f1f5f9; touch-action: none; cursor: crosshair; }
+  .row { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   .row label { color: var(--muted); font-size: 0.9rem; }
   input[type="range"] { width: 150px; }
-  .prediction {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 14px;
-  }
-  .big-digit {
-    width: 96px;
-    height: 96px;
-    border-radius: 24px;
-    background: #eff6ff;
-    color: var(--accent);
-    display: grid;
-    place-items: center;
-    font-size: 4.2rem;
-    font-weight: 800;
-    line-height: 1;
-  }
+  .controls { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  button { min-height: 44px; border-radius: 12px; border: 1px solid #cbd5e1; background: #fff; color: var(--ink); font-size: 0.98rem; font-weight: 650; padding: 9px 12px; cursor: pointer; }
+  button:disabled { opacity: 0.55; cursor: not-allowed; }
+  button.active { background: #dbeafe; border-color: var(--accent); color: var(--accent-dark); }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.primary:active { background: var(--accent-dark); }
+  button.secondary:active, button.small:active { transform: translateY(1px); }
+  .preview-wrap { display: flex; gap: 12px; align-items: center; color: var(--muted); font-size: 0.9rem; line-height: 1.35; margin-top: 2px; }
+  #previewCanvas { width: 84px; height: 84px; image-rendering: pixelated; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; }
+  .prediction { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 14px; margin-bottom: 14px; }
+  .big-digit { width: 96px; height: 96px; border-radius: 24px; background: #eff6ff; color: var(--accent); display: grid; place-items: center; font-size: 4.2rem; font-weight: 800; line-height: 1; }
   .status { color: var(--muted); font-size: 0.95rem; line-height: 1.42; }
   .status strong { color: var(--ink); }
+  .confidence-note { display: inline-block; margin-top: 5px; padding: 3px 8px; border-radius: 999px; font-size: 0.82rem; font-weight: 700; }
+  .confidence-high { background: #dcfce7; color: #166534; }
+  .confidence-mid { background: #fef3c7; color: #92400e; }
+  .confidence-low { background: #fee2e2; color: #991b1b; }
   .bars { display: grid; gap: 7px; margin-top: 10px; }
-  .bar-row {
-    display: grid;
-    grid-template-columns: 24px 1fr 54px;
-    gap: 8px;
-    align-items: center;
-    font-size: 0.9rem;
-  }
-  .bar-bg {
-    height: 16px;
-    background: #e5e7eb;
-    border-radius: 999px;
-    overflow: hidden;
-  }
-  .bar-fill {
-    height: 100%;
-    width: 0%;
-    background: var(--accent);
-    border-radius: 999px;
-    transition: width 140ms ease;
-  }
-  .small-title {
-    font-weight: 750;
-    margin: 6px 0 8px;
-  }
-  .train-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 7px;
-  }
-  button.small {
-    min-height: 38px;
-    padding: 6px 4px;
-    border-radius: 10px;
-    font-size: 0.95rem;
-    font-weight: 750;
-  }
-  .tools {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-top: 10px;
-  }
-  .preview-wrap {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    color: var(--muted);
-    font-size: 0.9rem;
-    margin-top: 12px;
-    line-height: 1.35;
-  }
-  #previewCanvas {
-    width: 84px;
-    height: 84px;
-    image-rendering: pixelated;
-    border: 1px solid #cbd5e1;
-    border-radius: 10px;
-    background: #fff;
-  }
-  .note {
-    margin-top: 12px;
-    color: var(--muted);
-    font-size: 0.9rem;
-    line-height: 1.42;
-  }
+  .bar-row { display: grid; grid-template-columns: 24px 1fr 58px; gap: 8px; align-items: center; font-size: 0.9rem; }
+  .bar-bg { height: 16px; background: #e5e7eb; border-radius: 999px; overflow: hidden; }
+  .bar-fill { height: 100%; width: 0%; background: var(--accent); border-radius: 999px; transition: width 140ms ease; }
+  .model-info { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+  .pill { background: #f8fafc; border: 1px solid var(--line); border-radius: 12px; padding: 8px; text-align: center; }
+  .pill span { display: block; color: var(--muted); font-size: 0.75rem; }
+  .pill b { display: block; font-size: 1.05rem; margin-top: 2px; }
+  .small-title { font-weight: 750; margin: 14px 0 8px; }
+  .train-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; }
+  button.small { min-height: 38px; padding: 6px 4px; border-radius: 10px; font-size: 0.95rem; font-weight: 750; }
+  .tools { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .note { margin-top: 12px; color: var(--muted); font-size: 0.9rem; line-height: 1.42; }
   .note strong { color: var(--ink); }
-  .model-info {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-top: 12px;
-  }
-  .pill {
-    background: #f8fafc;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 8px;
-    text-align: center;
-  }
-  .pill span { display:block; color: var(--muted); font-size: 0.75rem; }
-  .pill b { display:block; font-size: 1.05rem; margin-top: 2px; }
-  @media (max-width: 840px) {
-    main { grid-template-columns: 1fr; }
-    .prediction { grid-template-columns: 84px 1fr; }
-    .big-digit { width: 84px; height: 84px; font-size: 3.6rem; }
-  }
+  @media (max-width: 840px) { main { grid-template-columns: 1fr; } .prediction { grid-template-columns: 84px 1fr; } .big-digit { width: 84px; height: 84px; font-size: 3.6rem; } }
 </style>
 </head>
 <body>
 <header>
   <h1>Handwritten Digit Classifier</h1>
-  <p class="subtitle"> Draw a single digit from 0 to 9 using a mouse, trackpad, finger, or stylus.</p>
+  <p class="subtitle">Draw one digit from 0 to 9 using a mouse, trackpad, finger, or stylus. This version stays fully local and improves accuracy with stronger template matching, preprocessing, and user examples.</p>
 </header>
-
 <main>
   <section class="card draw-wrap">
     <canvas id="drawCanvas" aria-label="Draw a digit here"></canvas>
-    <div class="row">
-      <label for="brushSize">Brush size</label>
-      <input id="brushSize" type="range" min="8" max="34" value="22" />
-    </div>
-    <div class="controls">
-      <button id="drawModeBtn" class="secondary active">Draw</button>
-      <button id="eraseModeBtn" class="secondary">Erase</button>
-      <button id="clearBtn" class="secondary">Clear</button>
-      <button id="classifyBtn" class="primary">Classify</button>
-    </div>
-    <div class="preview-wrap">
-      <canvas id="previewCanvas" width="28" height="28" aria-label="Processed 28 by 28 digit preview"></canvas>
-      <div>
-        <strong>Processed input</strong><br />
-        The app crops, recenters, and resizes the drawing to a 28×28 MNIST-like image before classification.
-      </div>
-    </div>
+    <div class="row"><label for="brushSize">Brush size</label><input id="brushSize" type="range" min="8" max="34" value="22" /></div>
+    <div class="controls"><button id="drawModeBtn" class="secondary active">Draw</button><button id="eraseModeBtn" class="secondary">Erase</button><button id="clearBtn" class="secondary">Clear</button><button id="classifyBtn" class="primary">Classify</button></div>
+    <div class="preview-wrap"><canvas id="previewCanvas" width="28" height="28" aria-label="Processed 28 by 28 digit preview"></canvas><div><strong>Processed input</strong><br />The app crops, recenters, rescales, contrast-normalizes, and conditionally smooths the drawing before classification.</div></div>
   </section>
-
   <section class="card">
-    <div class="prediction">
-      <div id="bigDigit" class="big-digit">?</div>
-      <div class="status" id="statusText">
-        <strong>Model is building templates...</strong><br />
-        This runs locally in your browser. No server is needed.
-      </div>
-    </div>
-
+    <div class="prediction"><div id="bigDigit" class="big-digit">?</div><div class="status" id="statusText"><strong>Model is building templates...</strong><br />This runs locally in your browser. No server or CNN is used.</div></div>
     <div class="bars" id="bars"></div>
-
-    <div class="model-info">
-      <div class="pill"><span>Base templates</span><b id="baseCount">0</b></div>
-      <div class="pill"><span>Your examples</span><b id="userCount">0</b></div>
-      <div class="pill"><span>Input method</span><b>Touch + mouse</b></div>
-    </div>
-
+    <div class="model-info"><div class="pill"><span>Base templates</span><b id="baseCount">0</b></div><div class="pill"><span>Your examples</span><b id="userCount">0</b></div><div class="pill"><span>Method</span><b>Template</b></div></div>
     <div class="small-title">Improve accuracy on your drawing style</div>
     <div class="train-grid" id="trainGrid"></div>
-    <div class="tools">
-      <button id="undoExampleBtn" class="secondary">Undo last example</button>
-      <button id="resetExamplesBtn" class="secondary">Reset saved examples</button>
-    </div>
-
-    <p class="note">
-      Use <strong>Draw</strong> to write and <strong>Erase</strong> to fix part of a digit without clearing the whole canvas.
-    </p>
+    <div class="tools"><button id="undoExampleBtn" class="secondary">Undo last example</button><button id="resetExamplesBtn" class="secondary">Reset saved examples</button></div>
+    <p class="note">Use <strong>Draw</strong> to write and <strong>Erase</strong> to fix part of a digit. If the prediction is wrong, click the correct digit below to save your example. Saved examples stay in this browser only.</p>
   </section>
 </main>
-
 <script>
 (() => {
   'use strict';
-
   const drawCanvas = document.getElementById('drawCanvas');
   const drawCtx = drawCanvas.getContext('2d', { willReadFrequently: true });
   const previewCanvas = document.getElementById('previewCanvas');
@@ -289,61 +105,41 @@
   const trainGrid = document.getElementById('trainGrid');
   const undoExampleBtn = document.getElementById('undoExampleBtn');
   const resetExamplesBtn = document.getElementById('resetExamplesBtn');
-
-  const STORAGE_KEY = 'mobile-digit-classifier-user-templates-v2';
-  const size = 28;
+  const STORAGE_KEY = 'mobile-digit-classifier-user-templates-v4';
+  const SIZE = 28;
+  const TEMPLATE_CANVAS_SIZE = 112;
+  const USER_TEMPLATE_LIMIT = 600;
   const baseTemplates = [];
   let userTemplates = [];
   let templatesByDigit = Array.from({ length: 10 }, () => []);
-  let ready = false;
-  let lastAdded = null;
-  let lastVector = null;
-  let lastMeta = null;
-  let drawing = false;
-  let mode = 'draw';
-  let lastPoint = null;
-  let pendingTimer = null;
+  let ready = false, drawing = false, mode = 'draw', lastPoint = null, pendingTimer = null;
+  let lastVector = null, lastMeta = null, lastAddedBatchId = null;
 
-  function mulberry32(seed) {
-    return function() {
-      let t = seed += 0x6D2B79F5;
-      t = Math.imul(t ^ (t >>> 15), t | 1);
-      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-  }
-
-  function randn(rng) {
-    let u = 0, v = 0;
-    while (u === 0) u = rng();
-    while (v === 0) v = rng();
-    return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
-  }
+  function mulberry32(seed) { return function() { let t = seed += 0x6D2B79F5; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  function randn(rng) { let u = 0, v = 0; while (u === 0) u = rng(); while (v === 0) v = rng(); return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v); }
+  function clamp01(x) { return Math.max(0, Math.min(1, x)); }
 
   function resizeMainCanvas() {
     const rect = drawCanvas.getBoundingClientRect();
     const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+    const previous = document.createElement('canvas');
+    previous.width = drawCanvas.width || 1; previous.height = drawCanvas.height || 1;
+    if (drawCanvas.width && drawCanvas.height) previous.getContext('2d').drawImage(drawCanvas, 0, 0);
     drawCanvas.width = Math.round(rect.width * dpr);
     drawCanvas.height = Math.round(rect.height * dpr);
     drawCtx.setTransform(1, 0, 0, 1, 0, 0);
-    drawCtx.fillStyle = '#ffffff';
-    drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
-    drawCtx.lineCap = 'round';
-    drawCtx.lineJoin = 'round';
+    drawCtx.fillStyle = '#ffffff'; drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+    drawCtx.lineCap = 'round'; drawCtx.lineJoin = 'round';
+    if (previous.width > 1 && previous.height > 1) drawCtx.drawImage(previous, 0, 0, drawCanvas.width, drawCanvas.height);
   }
 
   function clearCanvas() {
-    drawCtx.fillStyle = '#ffffff';
-    drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+    drawCtx.fillStyle = '#ffffff'; drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
     bigDigit.textContent = '?';
-    statusText.innerHTML = ready
-      ? '<strong>Draw one digit, then classify.</strong><br />Use a large, centered digit for best results.'
-      : '<strong>Model is building templates...</strong><br />This runs locally in your browser.';
+    statusText.innerHTML = ready ? '<strong>Draw one digit, then classify.</strong><br />Use a large, centered digit for best results.' : '<strong>Model is building templates...</strong><br />This runs locally in your browser.';
     updateBars(new Array(10).fill(0));
-    previewCtx.fillStyle = '#ffffff';
-    previewCtx.fillRect(0, 0, 28, 28);
-    lastVector = null;
-    lastMeta = null;
+    previewCtx.fillStyle = '#ffffff'; previewCtx.fillRect(0, 0, SIZE, SIZE);
+    lastVector = null; lastMeta = null;
   }
 
   function setMode(nextMode) {
@@ -351,606 +147,293 @@
     drawModeBtn.classList.toggle('active', mode === 'draw');
     eraseModeBtn.classList.toggle('active', mode === 'erase');
     drawCanvas.style.cursor = mode === 'erase' ? 'cell' : 'crosshair';
-    if (ready) {
-      statusText.innerHTML = mode === 'erase'
-        ? '<strong>Eraser is on.</strong><br />Drag over unwanted strokes, then classify again.'
-        : '<strong>Draw mode is on.</strong><br />Draw one large centered digit, then classify.';
-    }
+    if (ready) statusText.innerHTML = mode === 'erase' ? '<strong>Eraser is on.</strong><br />Drag over unwanted strokes, then classify again.' : '<strong>Draw mode is on.</strong><br />Draw one large centered digit, then classify.';
   }
 
   function pointerPosition(evt) {
     const rect = drawCanvas.getBoundingClientRect();
-    return {
-      x: (evt.clientX - rect.left) * (drawCanvas.width / rect.width),
-      y: (evt.clientY - rect.top) * (drawCanvas.height / rect.height)
-    };
+    return { x: (evt.clientX - rect.left) * (drawCanvas.width / rect.width), y: (evt.clientY - rect.top) * (drawCanvas.height / rect.height) };
   }
 
   function drawLine(a, b) {
-    const scale = drawCanvas.width / drawCanvas.getBoundingClientRect().width;
-    const baseWidth = Number(brushSize.value) * scale;
+    const rect = drawCanvas.getBoundingClientRect();
+    const scale = drawCanvas.width / rect.width;
+    const width = Number(brushSize.value) * scale;
     drawCtx.strokeStyle = mode === 'erase' ? '#ffffff' : '#000000';
-    drawCtx.lineWidth = mode === 'erase' ? baseWidth * 1.35 : baseWidth;
-    drawCtx.beginPath();
-    drawCtx.moveTo(a.x, a.y);
-    drawCtx.lineTo(b.x, b.y);
-    drawCtx.stroke();
+    drawCtx.lineWidth = mode === 'erase' ? width * 1.42 : width;
+    drawCtx.beginPath(); drawCtx.moveTo(a.x, a.y); drawCtx.lineTo(b.x, b.y); drawCtx.stroke();
   }
 
-  drawCanvas.addEventListener('pointerdown', (evt) => {
-    evt.preventDefault();
-    drawing = true;
-    drawCanvas.setPointerCapture(evt.pointerId);
-    lastPoint = pointerPosition(evt);
-    drawLine(lastPoint, lastPoint);
-  });
-
-  drawCanvas.addEventListener('pointermove', (evt) => {
-    if (!drawing) return;
-    evt.preventDefault();
-    const p = pointerPosition(evt);
-    drawLine(lastPoint, p);
-    lastPoint = p;
-  });
-
-  function finishPointer(evt) {
-    if (!drawing) return;
-    evt.preventDefault();
-    drawing = false;
-    lastPoint = null;
-    if (pendingTimer) clearTimeout(pendingTimer);
-    pendingTimer = setTimeout(() => classifyCurrent(false), 120);
-  }
+  drawCanvas.addEventListener('pointerdown', (evt) => { evt.preventDefault(); drawing = true; drawCanvas.setPointerCapture(evt.pointerId); lastPoint = pointerPosition(evt); drawLine(lastPoint, lastPoint); });
+  drawCanvas.addEventListener('pointermove', (evt) => { if (!drawing) return; evt.preventDefault(); const p = pointerPosition(evt); drawLine(lastPoint, p); lastPoint = p; });
+  function finishPointer(evt) { if (!drawing) return; evt.preventDefault(); drawing = false; lastPoint = null; if (pendingTimer) clearTimeout(pendingTimer); pendingTimer = setTimeout(() => classifyCurrent(false), 110); }
   drawCanvas.addEventListener('pointerup', finishPointer);
   drawCanvas.addEventListener('pointercancel', finishPointer);
-  drawCanvas.addEventListener('pointerleave', (evt) => {
-    if (drawing && evt.pointerType === 'mouse') finishPointer(evt);
-  });
-
+  drawCanvas.addEventListener('pointerleave', (evt) => { if (drawing && evt.pointerType === 'mouse') finishPointer(evt); });
   drawModeBtn.addEventListener('click', () => setMode('draw'));
   eraseModeBtn.addEventListener('click', () => setMode('erase'));
-  clearBtn.addEventListener('click', () => {
-    setMode('draw');
-    clearCanvas();
-  });
+  clearBtn.addEventListener('click', () => { setMode('draw'); clearCanvas(); });
   classifyBtn.addEventListener('click', () => classifyCurrent(true));
 
   function vectorStats(v) {
-    let mass = 0, norm2 = 0, maxVal = 0;
-    for (let i = 0; i < v.length; i++) {
-      const x = v[i];
-      mass += x;
-      norm2 += x * x;
-      if (x > maxVal) maxVal = x;
-    }
-    return { mass, norm: Math.sqrt(norm2) + 1e-8, maxVal };
+    let mass = 0, norm2 = 0, maxVal = 0, sx = 0, sy = 0;
+    for (let y = 0; y < SIZE; y++) for (let x = 0; x < SIZE; x++) { const val = v[y * SIZE + x]; mass += val; norm2 += val * val; sx += x * val; sy += y * val; if (val > maxVal) maxVal = val; }
+    return { mass, norm: Math.sqrt(norm2) + 1e-8, maxVal, cx: mass > 1e-8 ? sx / mass : 13.5, cy: mass > 1e-8 ? sy / mass : 13.5 };
   }
 
   function shiftVector(v, dx, dy) {
-    const out = new Float32Array(size * size);
-    for (let y = 0; y < size; y++) {
-      const sy = y - dy;
-      if (sy < 0 || sy >= size) continue;
-      for (let x = 0; x < size; x++) {
-        const sx = x - dx;
-        if (sx < 0 || sx >= size) continue;
-        out[y * size + x] = v[sy * size + sx];
-      }
-    }
+    const out = new Float32Array(SIZE * SIZE);
+    for (let y = 0; y < SIZE; y++) { const sy = y - dy; if (sy < 0 || sy >= SIZE) continue; for (let x = 0; x < SIZE; x++) { const sx = x - dx; if (sx < 0 || sx >= SIZE) continue; out[y * SIZE + x] = v[sy * SIZE + sx]; } }
     return out;
   }
 
-  function blurVector(v) {
-    const out = new Float32Array(size * size);
-    const k = [1, 2, 1, 2, 4, 2, 1, 2, 1];
-    for (let y = 0; y < size; y++) {
-      for (let x = 0; x < size; x++) {
-        let s = 0, w = 0, idx = 0;
-        for (let yy = -1; yy <= 1; yy++) {
-          for (let xx = -1; xx <= 1; xx++) {
-            const nx = x + xx, ny = y + yy;
-            const kw = k[idx++];
-            if (nx >= 0 && nx < size && ny >= 0 && ny < size) {
-              s += kw * v[ny * size + nx];
-              w += kw;
-            }
-          }
-        }
-        out[y * size + x] = s / w;
-      }
+  function scaleIntensity(v, gain) { const out = new Float32Array(SIZE * SIZE); for (let i = 0; i < v.length; i++) out[i] = clamp01(v[i] * gain); return out; }
+
+  function blurVector(v, amount = 1) {
+    const out = new Float32Array(SIZE * SIZE); const center = Math.max(1, 4 * amount); const k = [1, 2, 1, 2, center, 2, 1, 2, 1];
+    for (let y = 0; y < SIZE; y++) for (let x = 0; x < SIZE; x++) { let s = 0, w = 0, idx = 0; for (let yy = -1; yy <= 1; yy++) for (let xx = -1; xx <= 1; xx++) { const nx = x + xx, ny = y + yy, kw = k[idx++]; if (nx >= 0 && nx < SIZE && ny >= 0 && ny < SIZE) { s += kw * v[ny * SIZE + nx]; w += kw; } } out[y * SIZE + x] = s / w; }
+    return out;
+  }
+
+  function thickenVector(v, amount = 0.18) {
+    const out = new Float32Array(SIZE * SIZE);
+    for (let y = 0; y < SIZE; y++) for (let x = 0; x < SIZE; x++) { let m = v[y * SIZE + x]; for (let yy = -1; yy <= 1; yy++) for (let xx = -1; xx <= 1; xx++) { const nx = x + xx, ny = y + yy; if (nx >= 0 && nx < SIZE && ny >= 0 && ny < SIZE) m = Math.max(m, v[ny * SIZE + nx] * amount); } out[y * SIZE + x] = m; }
+    return out;
+  }
+
+  function rotateVector(v, degrees) {
+    const rad = degrees * Math.PI / 180, cos = Math.cos(rad), sin = Math.sin(rad), cx = 13.5, cy = 13.5;
+    const out = new Float32Array(SIZE * SIZE);
+    for (let y = 0; y < SIZE; y++) for (let x = 0; x < SIZE; x++) {
+      const rx = x - cx, ry = y - cy, sx = cos * rx + sin * ry + cx, sy = -sin * rx + cos * ry + cy;
+      const x0 = Math.floor(sx), y0 = Math.floor(sy), ax = sx - x0, ay = sy - y0;
+      let val = 0;
+      for (let yy = 0; yy <= 1; yy++) for (let xx = 0; xx <= 1; xx++) { const px = x0 + xx, py = y0 + yy; if (px >= 0 && px < SIZE && py >= 0 && py < SIZE) { const wx = xx === 0 ? 1 - ax : ax, wy = yy === 0 ? 1 - ay : ay; val += v[py * SIZE + px] * wx * wy; } }
+      out[y * SIZE + x] = val;
     }
     return out;
   }
 
   function preprocessCanvas(srcCanvas, drawPreview = false) {
-    const w = srcCanvas.width, h = srcCanvas.height;
-    const ctx = srcCanvas.getContext('2d', { willReadFrequently: true });
+    const w = srcCanvas.width, h = srcCanvas.height, ctx = srcCanvas.getContext('2d', { willReadFrequently: true });
     const data = ctx.getImageData(0, 0, w, h).data;
-    let minX = w, minY = h, maxX = -1, maxY = -1;
-    let rawMass = 0;
-
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        const i = (y * w + x) * 4;
-        const alpha = data[i + 3] / 255;
-        const darkness = 1 - (data[i] + data[i + 1] + data[i + 2]) / 765;
-        const ink = Math.max(0, darkness) * alpha;
-        if (ink > 0.055) {
-          if (x < minX) minX = x;
-          if (x > maxX) maxX = x;
-          if (y < minY) minY = y;
-          if (y > maxY) maxY = y;
-          rawMass += ink;
-        }
-      }
-    }
-
-    const blank = maxX < minX || maxY < minY || rawMass < 5;
-    const out = new Float32Array(size * size);
-    if (blank) {
-      if (drawPreview) renderPreview(out);
-      return { vector: out, blank: true, holes: 0, aspect: 1, mass: 0, bbox: null };
-    }
-
-    const pad = Math.round(Math.max(w, h) * 0.015);
-    minX = Math.max(0, minX - pad);
-    minY = Math.max(0, minY - pad);
-    maxX = Math.min(w - 1, maxX + pad);
-    maxY = Math.min(h - 1, maxY + pad);
-    const bw = maxX - minX + 1;
-    const bh = maxY - minY + 1;
-
-    const tmp = document.createElement('canvas');
-    tmp.width = size;
-    tmp.height = size;
-    const tctx = tmp.getContext('2d', { willReadFrequently: true });
-    tctx.fillStyle = '#ffffff';
-    tctx.fillRect(0, 0, size, size);
-    tctx.imageSmoothingEnabled = true;
-    tctx.imageSmoothingQuality = 'high';
-
-    const target = 20;
-    const scale = Math.min(target / bw, target / bh);
-    const nw = Math.max(1, bw * scale);
-    const nh = Math.max(1, bh * scale);
-    const dx = (size - nw) / 2;
-    const dy = (size - nh) / 2;
+    let minX = w, minY = h, maxX = -1, maxY = -1, rawMass = 0;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const i = (y * w + x) * 4; const alpha = data[i + 3] / 255; const darkness = 1 - (data[i] + data[i + 1] + data[i + 2]) / 765; const ink = Math.max(0, darkness) * alpha; if (ink > 0.045) { minX = Math.min(minX, x); maxX = Math.max(maxX, x); minY = Math.min(minY, y); maxY = Math.max(maxY, y); rawMass += ink; } }
+    const empty = new Float32Array(SIZE * SIZE);
+    if (maxX < minX || maxY < minY || rawMass < 4.5) { if (drawPreview) renderPreview(empty); return { vector: empty, blank: true, holes: 0, aspect: 1, mass: 0, bbox: null }; }
+    const pad = Math.round(Math.max(w, h) * 0.018);
+    minX = Math.max(0, minX - pad); minY = Math.max(0, minY - pad); maxX = Math.min(w - 1, maxX + pad); maxY = Math.min(h - 1, maxY + pad);
+    const bw = maxX - minX + 1, bh = maxY - minY + 1, aspect = bw / Math.max(1, bh);
+    const tmp = document.createElement('canvas'); tmp.width = SIZE; tmp.height = SIZE;
+    const tctx = tmp.getContext('2d', { willReadFrequently: true }); tctx.fillStyle = '#ffffff'; tctx.fillRect(0, 0, SIZE, SIZE); tctx.imageSmoothingEnabled = true; tctx.imageSmoothingQuality = 'high';
+    let target = 20.2; if (aspect < 0.48) target = 21.8; if (aspect > 1.10) target = 19.2;
+    const scale = Math.min(target / bw, target / bh), nw = Math.max(1, bw * scale), nh = Math.max(1, bh * scale), dx = (SIZE - nw) / 2, dy = (SIZE - nh) / 2;
     tctx.drawImage(srcCanvas, minX, minY, bw, bh, dx, dy, nw, nh);
-
-    const tdata = tctx.getImageData(0, 0, size, size).data;
-    const vec = new Float32Array(size * size);
-    let mass = 0, sx = 0, sy = 0;
-    for (let y = 0; y < size; y++) {
-      for (let x = 0; x < size; x++) {
-        const i = (y * size + x) * 4;
-        let ink = 1 - (tdata[i] + tdata[i + 1] + tdata[i + 2]) / 765;
-        ink = Math.max(0, Math.min(1, ink));
-        // Slight contrast boost helps light antialiasing behave like MNIST ink.
-        ink = Math.pow(ink, 0.82);
-        vec[y * size + x] = ink;
-        mass += ink;
-        sx += x * ink;
-        sy += y * ink;
-      }
-    }
-
+    const tdata = tctx.getImageData(0, 0, SIZE, SIZE).data, vec = new Float32Array(SIZE * SIZE);
+    let mass = 0, sx = 0, sy = 0, maxVal = 0;
+    for (let y = 0; y < SIZE; y++) for (let x = 0; x < SIZE; x++) { const i = (y * SIZE + x) * 4; let ink = 1 - (tdata[i] + tdata[i + 1] + tdata[i + 2]) / 765; ink = Math.pow(clamp01(ink), 0.78); vec[y * SIZE + x] = ink; mass += ink; sx += x * ink; sy += y * ink; maxVal = Math.max(maxVal, ink); }
     let centered = vec;
-    if (mass > 1e-6) {
-      const cx = sx / mass, cy = sy / mass;
-      const shiftX = Math.round(13.5 - cx);
-      const shiftY = Math.round(13.5 - cy);
-      centered = shiftVector(vec, shiftX, shiftY);
-    }
-    centered = blurVector(centered);
-
-    const stats = vectorStats(centered);
+    if (mass > 1e-6) centered = shiftVector(vec, Math.round(13.5 - sx / mass), Math.round(13.5 - sy / mass));
+    let stats = vectorStats(centered);
+    if (stats.maxVal > 0 && stats.maxVal < 0.86) { centered = scaleIntensity(centered, 0.92 / stats.maxVal); stats = vectorStats(centered); }
+    if (stats.mass < 40 || stats.maxVal < 0.72) centered = blurVector(centered, 0.75); else if (stats.mass < 58) centered = thickenVector(centered, 0.13);
+    stats = vectorStats(centered);
     const holes = countHoles(centered);
-    const aspect = bw / Math.max(1, bh);
     if (drawPreview) renderPreview(centered);
-    return { vector: centered, blank: false, holes, aspect, mass: stats.mass, bbox: { minX, minY, maxX, maxY, bw, bh } };
+    return { vector: centered, blank: false, holes, aspect, mass: stats.mass, centroidX: stats.cx, centroidY: stats.cy, bbox: { minX, minY, maxX, maxY, bw, bh } };
   }
 
   function renderPreview(v) {
-    const img = previewCtx.createImageData(size, size);
-    for (let i = 0; i < v.length; i++) {
-      const shade = Math.round(255 * (1 - Math.max(0, Math.min(1, v[i]))));
-      img.data[i * 4] = shade;
-      img.data[i * 4 + 1] = shade;
-      img.data[i * 4 + 2] = shade;
-      img.data[i * 4 + 3] = 255;
-    }
+    const img = previewCtx.createImageData(SIZE, SIZE);
+    for (let i = 0; i < v.length; i++) { const shade = Math.round(255 * (1 - clamp01(v[i]))); img.data[i * 4] = shade; img.data[i * 4 + 1] = shade; img.data[i * 4 + 2] = shade; img.data[i * 4 + 3] = 255; }
     previewCtx.putImageData(img, 0, 0);
   }
 
   function countHoles(v) {
-    const grid = Array.from({ length: size }, () => new Uint8Array(size));
-    for (let y = 0; y < size; y++) {
-      for (let x = 0; x < size; x++) {
-        grid[y][x] = v[y * size + x] > 0.20 ? 1 : 0;
-      }
-    }
-    const seen = Array.from({ length: size }, () => new Uint8Array(size));
-    const qx = [], qy = [];
-    function push(x, y) {
-      if (x < 0 || x >= size || y < 0 || y >= size) return;
-      if (seen[y][x] || grid[y][x]) return;
-      seen[y][x] = 1;
-      qx.push(x); qy.push(y);
-    }
-    for (let x = 0; x < size; x++) { push(x, 0); push(x, size - 1); }
-    for (let y = 0; y < size; y++) { push(0, y); push(size - 1, y); }
-    for (let head = 0; head < qx.length; head++) {
-      const x = qx[head], y = qy[head];
-      push(x + 1, y); push(x - 1, y); push(x, y + 1); push(x, y - 1);
-    }
+    const grid = Array.from({ length: SIZE }, () => new Uint8Array(SIZE));
+    for (let y = 0; y < SIZE; y++) for (let x = 0; x < SIZE; x++) grid[y][x] = v[y * SIZE + x] > 0.22 ? 1 : 0;
+    const seen = Array.from({ length: SIZE }, () => new Uint8Array(SIZE)); const qx = [], qy = [];
+    function push(x, y) { if (x < 0 || x >= SIZE || y < 0 || y >= SIZE) return; if (seen[y][x] || grid[y][x]) return; seen[y][x] = 1; qx.push(x); qy.push(y); }
+    for (let x = 0; x < SIZE; x++) { push(x, 0); push(x, SIZE - 1); }
+    for (let y = 0; y < SIZE; y++) { push(0, y); push(SIZE - 1, y); }
+    for (let head = 0; head < qx.length; head++) { const x = qx[head], y = qy[head]; push(x + 1, y); push(x - 1, y); push(x, y + 1); push(x, y - 1); }
     let holes = 0;
-    for (let y = 1; y < size - 1; y++) {
-      for (let x = 1; x < size - 1; x++) {
-        if (!seen[y][x] && !grid[y][x]) {
-          holes++;
-          seen[y][x] = 1;
-          qx.length = 0; qy.length = 0;
-          qx.push(x); qy.push(y);
-          for (let head = 0; head < qx.length; head++) {
-            const cx = qx[head], cy = qy[head];
-            const nb = [[cx+1,cy],[cx-1,cy],[cx,cy+1],[cx,cy-1]];
-            for (const [nx, ny] of nb) {
-              if (nx > 0 && nx < size - 1 && ny > 0 && ny < size - 1 && !seen[ny][nx] && !grid[ny][nx]) {
-                seen[ny][nx] = 1;
-                qx.push(nx); qy.push(ny);
-              }
-            }
-          }
-        }
-      }
-    }
+    for (let y = 1; y < SIZE - 1; y++) for (let x = 1; x < SIZE - 1; x++) if (!seen[y][x] && !grid[y][x]) { holes++; seen[y][x] = 1; qx.length = 0; qy.length = 0; qx.push(x); qy.push(y); for (let head = 0; head < qx.length; head++) { const cx = qx[head], cy = qy[head], nb = [[cx + 1, cy], [cx - 1, cy], [cx, cy + 1], [cx, cy - 1]]; for (const [nx, ny] of nb) if (nx > 0 && nx < SIZE - 1 && ny > 0 && ny < SIZE - 1 && !seen[ny][nx] && !grid[ny][nx]) { seen[ny][nx] = 1; qx.push(nx); qy.push(ny); } } }
     return Math.min(holes, 3);
   }
 
-  function addTemplate(digit, vector, source) {
-    const stats = vectorStats(vector);
-    if (stats.mass < 1) return;
-    const tmpl = { digit, vector, norm: stats.norm, mass: stats.mass, source };
+  function addTemplate(digit, vector, source = 'base', batchId = null) {
+    const stats = vectorStats(vector); if (stats.mass < 1.5) return null;
+    const tmpl = { digit, vector, norm: stats.norm, mass: stats.mass, cx: stats.cx, cy: stats.cy, source, batchId };
     if (source === 'base') baseTemplates.push(tmpl);
     templatesByDigit[digit].push(tmpl);
+    return tmpl;
   }
 
-  function topKInsert(arr, val, k) {
-    for (let i = 0; i < k; i++) {
-      if (val > arr[i]) {
-        for (let j = k - 1; j > i; j--) arr[j] = arr[j - 1];
-        arr[i] = val;
-        return;
-      }
-    }
+  function rebuildTemplateIndex() {
+    templatesByDigit = Array.from({ length: 10 }, () => []);
+    for (const tmpl of baseTemplates) templatesByDigit[tmpl.digit].push(tmpl);
+    for (const raw of userTemplates) addTemplate(raw.digit, Float32Array.from(raw.vector), 'user', raw.batchId || null);
+    baseCount.textContent = String(baseTemplates.length);
+    userCount.textContent = String(new Set(userTemplates.map(t => t.batchId || t.time || 'x')).size);
   }
+
+  function topKInsert(arr, val, k) { for (let i = 0; i < k; i++) if (val > arr[i]) { for (let j = k - 1; j > i; j--) arr[j] = arr[j - 1]; arr[i] = val; return; } }
 
   function cosineScore(v, vStats, tmpl) {
-    let dot = 0;
-    const tv = tmpl.vector;
+    let dot = 0; const tv = tmpl.vector;
     for (let i = 0; i < v.length; i++) dot += v[i] * tv[i];
     const cos = dot / (vStats.norm * tmpl.norm);
     const massPenalty = Math.abs(vStats.mass - tmpl.mass) / Math.max(vStats.mass, tmpl.mass, 1);
-    return cos - 0.050 * massPenalty;
+    const centerPenalty = Math.hypot(vStats.cx - tmpl.cx, vStats.cy - tmpl.cy) / 20;
+    const userBoost = tmpl.source === 'user' ? 0.052 : 0;
+    return cos - 0.040 * massPenalty - 0.014 * centerPenalty + userBoost;
   }
+
+  function makeClassificationVariants(vector) { return [vector, shiftVector(vector, 1, 0), shiftVector(vector, -1, 0), shiftVector(vector, 0, 1), shiftVector(vector, 0, -1), shiftVector(vector, 1, 1), shiftVector(vector, -1, -1), shiftVector(vector, 1, -1), shiftVector(vector, -1, 1), rotateVector(vector, 4), rotateVector(vector, -4)]; }
 
   function classifyVector(vector, meta) {
-    const variants = [vector, shiftVector(vector, 1, 0), shiftVector(vector, -1, 0), shiftVector(vector, 0, 1), shiftVector(vector, 0, -1), shiftVector(vector, 1, 1), shiftVector(vector, -1, -1), shiftVector(vector, 1, -1), shiftVector(vector, -1, 1)];
-    const statsVariants = variants.map(vectorStats);
-    const scores = new Array(10).fill(-999);
-
+    const variants = makeClassificationVariants(vector), statsVariants = variants.map(vectorStats), scores = new Array(10).fill(-999);
     for (let d = 0; d < 10; d++) {
-      const top = [-999, -999, -999, -999, -999];
-      const list = templatesByDigit[d];
-      for (const tmpl of list) {
-        let best = -999;
-        for (let vi = 0; vi < variants.length; vi++) {
-          const sc = cosineScore(variants[vi], statsVariants[vi], tmpl);
-          if (sc > best) best = sc;
-        }
-        topKInsert(top, best, top.length);
-      }
-      const avgTop = top.reduce((a, b) => a + b, 0) / top.length;
-      scores[d] = 0.62 * top[0] + 0.38 * avgTop;
+      const top = [-999, -999, -999, -999, -999, -999, -999];
+      for (const tmpl of templatesByDigit[d]) { let best = -999; for (let vi = 0; vi < variants.length; vi++) { const score = cosineScore(variants[vi], statsVariants[vi], tmpl); if (score > best) best = score; } topKInsert(top, best, top.length); }
+      const usable = top.filter(x => x > -900); if (!usable.length) continue;
+      const best = usable[0], top3 = usable.slice(0, Math.min(3, usable.length)).reduce((a, b) => a + b, 0) / Math.min(3, usable.length), top7 = usable.reduce((a, b) => a + b, 0) / usable.length;
+      scores[d] = 0.64 * best + 0.26 * top3 + 0.10 * top7;
     }
-
     applyHeuristics(scores, meta);
-    const probs = softmax(scores, 22);
-    let bestDigit = 0, bestProb = probs[0];
-    for (let d = 1; d < 10; d++) {
-      if (probs[d] > bestProb) { bestDigit = d; bestProb = probs[d]; }
-    }
-    return { digit: bestDigit, probs, rawScores: scores };
+    const sortedScores = scores.map((score, digit) => ({ score, digit })).sort((a, b) => b.score - a.score);
+    const probs = softmax(scores, 26); let bestDigit = 0, bestProb = probs[0];
+    for (let d = 1; d < 10; d++) if (probs[d] > bestProb) { bestDigit = d; bestProb = probs[d]; }
+    return { digit: bestDigit, probs, rawScores: scores, margin: sortedScores[0].score - sortedScores[1].score, runnerUp: sortedScores[1].digit };
   }
 
-  function inkInRegion(v, x0, y0, x1, y1) {
-    let s = 0;
-    const xa = Math.max(0, Math.floor(x0)), xb = Math.min(size, Math.ceil(x1));
-    const ya = Math.max(0, Math.floor(y0)), yb = Math.min(size, Math.ceil(y1));
-    for (let y = ya; y < yb; y++) for (let x = xa; x < xb; x++) s += v[y * size + x];
-    return s;
-  }
+  function inkInRegion(v, x0, y0, x1, y1) { let s = 0; const xa = Math.max(0, Math.floor(x0)), xb = Math.min(SIZE, Math.ceil(x1)), ya = Math.max(0, Math.floor(y0)), yb = Math.min(SIZE, Math.ceil(y1)); for (let y = ya; y < yb; y++) for (let x = xa; x < xb; x++) s += v[y * SIZE + x]; return s; }
 
   function applyHeuristics(scores, meta) {
-    const holes = meta.holes || 0;
-    const aspect = meta.aspect || 1;
-    const v = meta.vectorForHeuristics;
-
-    if (holes >= 2) {
-      scores[8] += 0.075;
-      scores[0] -= 0.045; scores[6] -= 0.030; scores[9] -= 0.030;
-    } else if (holes === 1) {
-      scores[0] += 0.026; scores[6] += 0.022; scores[9] += 0.022;
-      scores[1] -= 0.040; scores[2] -= 0.018; scores[3] -= 0.012; scores[5] -= 0.012; scores[7] -= 0.020;
-    } else {
-      scores[0] -= 0.028; scores[8] -= 0.035; scores[9] -= 0.015; scores[6] -= 0.012;
-    }
-
-    if (aspect < 0.44) { scores[1] += 0.095; scores[7] -= 0.020; scores[4] -= 0.010; }
-    if (aspect > 1.15) { scores[1] -= 0.080; }
-
-    if (v) {
-      const top = inkInRegion(v, 3, 2, 25, 8);
-      const middle = inkInRegion(v, 3, 11, 25, 17);
-      const bottom = inkInRegion(v, 3, 20, 25, 26);
-      const leftTop = inkInRegion(v, 2, 5, 10, 14);
-      const rightTop = inkInRegion(v, 18, 5, 26, 14);
-      const leftBottom = inkInRegion(v, 2, 15, 10, 24);
-      const rightBottom = inkInRegion(v, 18, 15, 26, 24);
-      const total = Math.max(1, meta.mass || 1);
-
-      // 7: strong top bar, little bottom-left ink.
-      if (top / total > 0.17 && leftBottom / total < 0.10 && holes === 0) scores[7] += 0.035;
-      // 4: middle bar and right-side vertical structure.
-      if (middle / total > 0.15 && rightTop / total > 0.10 && rightBottom / total > 0.10 && holes === 0) scores[4] += 0.030;
-      // 2: top and bottom bars with less right-bottom mass than 3.
-      if (top / total > 0.12 && bottom / total > 0.13 && leftBottom / total > 0.09 && holes === 0) scores[2] += 0.025;
-      // 3: top/middle/bottom with more right side than left side.
-      if (top / total > 0.10 && middle / total > 0.10 && bottom / total > 0.10 && rightTop + rightBottom > leftTop + leftBottom && holes === 0) scores[3] += 0.024;
-      // 5: top/middle/bottom with stronger left-top and right-bottom.
-      if (top / total > 0.12 && middle / total > 0.10 && bottom / total > 0.10 && leftTop / total > 0.08 && rightBottom / total > 0.08 && holes === 0) scores[5] += 0.025;
-    }
+    const holes = meta.holes || 0, aspect = meta.aspect || 1, v = meta.vectorForHeuristics, mass = Math.max(1, meta.mass || 1);
+    if (holes >= 2) { scores[8] += 0.085; scores[0] -= 0.055; scores[6] -= 0.035; scores[9] -= 0.035; }
+    else if (holes === 1) { scores[0] += 0.030; scores[6] += 0.026; scores[9] += 0.026; scores[1] -= 0.050; scores[2] -= 0.020; scores[3] -= 0.014; scores[5] -= 0.014; scores[7] -= 0.024; }
+    else { scores[0] -= 0.035; scores[8] -= 0.040; scores[9] -= 0.018; scores[6] -= 0.015; }
+    if (aspect < 0.43) { scores[1] += 0.105; scores[7] -= 0.022; scores[4] -= 0.014; }
+    if (aspect > 1.14) { scores[1] -= 0.085; scores[7] += 0.012; }
+    if (!v) return;
+    const top = inkInRegion(v, 3, 2, 25, 8), upperMid = inkInRegion(v, 4, 8, 24, 13), middle = inkInRegion(v, 3, 11, 25, 17), lowerMid = inkInRegion(v, 4, 16, 24, 21), bottom = inkInRegion(v, 3, 20, 25, 26), leftTop = inkInRegion(v, 2, 5, 10, 14), rightTop = inkInRegion(v, 18, 5, 26, 14), leftBottom = inkInRegion(v, 2, 15, 10, 24), rightBottom = inkInRegion(v, 18, 15, 26, 24), center = inkInRegion(v, 10, 9, 18, 19);
+    const topR = top / mass, middleR = middle / mass, bottomR = bottom / mass, leftTopR = leftTop / mass, rightTopR = rightTop / mass, leftBottomR = leftBottom / mass, rightBottomR = rightBottom / mass, centerR = center / mass, rightMass = rightTop + rightBottom, leftMass = leftTop + leftBottom;
+    if (topR > 0.17 && leftBottomR < 0.095 && holes === 0) { scores[7] += 0.040; scores[1] -= 0.018; }
+    if (middleR > 0.145 && rightTopR > 0.09 && rightBottomR > 0.09 && holes === 0) scores[4] += 0.035;
+    if (topR > 0.115 && bottomR > 0.125 && leftBottomR > 0.085 && holes === 0) { scores[2] += 0.030; scores[3] -= 0.010; }
+    if (topR > 0.10 && middleR > 0.095 && bottomR > 0.10 && rightMass > leftMass * 1.10 && holes === 0) scores[3] += 0.030;
+    if (topR > 0.11 && middleR > 0.09 && bottomR > 0.10 && leftTopR > 0.075 && rightBottomR > 0.075 && holes === 0) scores[5] += 0.030;
+    if (holes === 1 && leftBottomR > 0.10 && rightBottomR > 0.08 && rightTopR < 0.16) { scores[6] += 0.025; scores[9] -= 0.010; }
+    if (holes === 1 && rightTopR > 0.11 && rightBottomR > 0.10 && leftBottomR < 0.12) scores[9] += 0.022;
+    if (holes >= 1 && upperMid / mass > 0.08 && lowerMid / mass > 0.08 && centerR > 0.055) scores[8] += holes >= 2 ? 0.030 : 0.014;
   }
 
-  function softmax(scores, temp) {
-    const mx = Math.max(...scores);
-    const exps = scores.map(s => Math.exp((s - mx) * temp));
-    const sum = exps.reduce((a, b) => a + b, 0) || 1;
-    return exps.map(e => e / sum);
-  }
+  function softmax(scores, temperature) { const mx = Math.max(...scores), exps = scores.map(s => Math.exp((s - mx) * temperature)), sum = exps.reduce((a, b) => a + b, 0) || 1; return exps.map(e => e / sum); }
 
   function updateBars(probs) {
     bars.innerHTML = '';
     for (let d = 0; d < 10; d++) {
-      const row = document.createElement('div');
-      row.className = 'bar-row';
-      const label = document.createElement('div');
-      label.textContent = String(d);
-      const bg = document.createElement('div');
-      bg.className = 'bar-bg';
-      const fill = document.createElement('div');
-      fill.className = 'bar-fill';
-      fill.style.width = `${Math.round((probs[d] || 0) * 100)}%`;
-      bg.appendChild(fill);
-      const pct = document.createElement('div');
-      pct.textContent = `${Math.round((probs[d] || 0) * 100)}%`;
-      row.appendChild(label);
-      row.appendChild(bg);
-      row.appendChild(pct);
-      bars.appendChild(row);
+      const row = document.createElement('div'); row.className = 'bar-row';
+      const label = document.createElement('div'); label.textContent = String(d);
+      const bg = document.createElement('div'); bg.className = 'bar-bg';
+      const fill = document.createElement('div'); fill.className = 'bar-fill'; fill.style.width = `${Math.round((probs[d] || 0) * 100)}%`; bg.appendChild(fill);
+      const pct = document.createElement('div'); pct.textContent = `${Math.round((probs[d] || 0) * 100)}%`;
+      row.appendChild(label); row.appendChild(bg); row.appendChild(pct); bars.appendChild(row);
     }
   }
 
   function classifyCurrent(showBlankMessage) {
-    if (!ready) {
-      statusText.innerHTML = '<strong>Model is still building templates.</strong><br />Try again in a moment.';
-      return;
-    }
-    const prep = preprocessCanvas(drawCanvas, true);
-    lastVector = prep.vector;
-    lastMeta = prep;
-    if (prep.blank) {
-      if (showBlankMessage) statusText.innerHTML = '<strong>No digit detected.</strong><br />Draw one large digit first.';
-      bigDigit.textContent = '?';
-      updateBars(new Array(10).fill(0));
-      return;
-    }
-    const meta = { ...prep, vectorForHeuristics: prep.vector };
-    const result = classifyVector(prep.vector, meta);
+    if (!ready) { statusText.innerHTML = '<strong>Model is still building templates.</strong><br />Try again in a moment.'; return; }
+    const prep = preprocessCanvas(drawCanvas, true); lastVector = prep.vector; lastMeta = prep;
+    if (prep.blank) { if (showBlankMessage) statusText.innerHTML = '<strong>No digit detected.</strong><br />Draw one large digit first.'; bigDigit.textContent = '?'; updateBars(new Array(10).fill(0)); return; }
+    const result = classifyVector(prep.vector, { ...prep, vectorForHeuristics: prep.vector });
     bigDigit.textContent = String(result.digit);
-    const confidence = Math.round(result.probs[result.digit] * 100);
-    const sorted = result.probs.map((p, d) => ({ p, d })).sort((a, b) => b.p - a.p);
-    statusText.innerHTML = `<strong>Prediction: ${result.digit}</strong><br />Confidence: ${confidence}%. Next likely: ${sorted[1].d} (${Math.round(sorted[1].p * 100)}%).`;
+    const confidence = result.probs[result.digit], sorted = result.probs.map((p, d) => ({ p, d })).sort((a, b) => b.p - a.p);
+    let label = 'High confidence', className = 'confidence-high', extra = 'Click the correct digit below if this is wrong.';
+    if (confidence < 0.45 || result.margin < 0.018) { label = 'Low confidence'; className = 'confidence-low'; extra = 'This drawing is ambiguous. Try writing larger, or save it as the correct digit.'; }
+    else if (confidence < 0.68 || result.margin < 0.035) { label = 'Medium confidence'; className = 'confidence-mid'; extra = 'The top two digits are close. Save the correct label if needed.'; }
+    statusText.innerHTML = `<strong>Prediction: ${result.digit}</strong><br />Confidence: ${Math.round(confidence * 100)}%. Next likely: ${sorted[1].d} (${Math.round(sorted[1].p * 100)}%).<br /><span class="confidence-note ${className}">${label}</span><br />${extra}`;
     updateBars(result.probs);
   }
 
-  function createTemplateCanvas() {
-    const c = document.createElement('canvas');
-    c.width = 96;
-    c.height = 96;
-    const ctx = c.getContext('2d');
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, c.width, c.height);
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    return { c, ctx };
-  }
-
-  function transformContext(ctx, rng) {
-    const tx = 48 + randn(rng) * 2.3;
-    const ty = 48 + randn(rng) * 2.3;
-    const rot = randn(rng) * 0.10;
-    const sx = 1 + randn(rng) * 0.065;
-    const sy = 1 + randn(rng) * 0.075;
-    ctx.translate(tx, ty);
-    ctx.rotate(rot);
-    ctx.scale(sx, sy);
-    ctx.translate(-48, -48);
-  }
+  function createTemplateCanvas() { const c = document.createElement('canvas'); c.width = TEMPLATE_CANVAS_SIZE; c.height = TEMPLATE_CANVAS_SIZE; const ctx = c.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height); ctx.lineCap = 'round'; ctx.lineJoin = 'round'; return { c, ctx }; }
+  function transformContext(ctx, rng) { const tx = 56 + randn(rng) * 2.8, ty = 56 + randn(rng) * 2.8, rot = randn(rng) * 0.115, sx = 1 + randn(rng) * 0.075, sy = 1 + randn(rng) * 0.085; ctx.translate(tx, ty); ctx.rotate(rot); ctx.scale(sx, sy); ctx.translate(-56, -56); }
 
   function drawPathDigit(ctx, d, rng) {
-    ctx.save();
-    transformContext(ctx, rng);
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 9 + rng() * 7;
-    const jitter = () => randn(rng) * 1.6;
-    function M(x, y) { ctx.moveTo(x + jitter(), y + jitter()); }
-    function L(x, y) { ctx.lineTo(x + jitter(), y + jitter()); }
-    function Q(cx, cy, x, y) { ctx.quadraticCurveTo(cx + jitter(), cy + jitter(), x + jitter(), y + jitter()); }
-    function C(c1x, c1y, c2x, c2y, x, y) { ctx.bezierCurveTo(c1x + jitter(), c1y + jitter(), c2x + jitter(), c2y + jitter(), x + jitter(), y + jitter()); }
+    ctx.save(); transformContext(ctx, rng); ctx.strokeStyle = '#000000'; ctx.lineWidth = 10 + rng() * 8;
+    const jitter = () => randn(rng) * 1.9; const M = (x, y) => ctx.moveTo(x + jitter(), y + jitter()), L = (x, y) => ctx.lineTo(x + jitter(), y + jitter()), Q = (cx, cy, x, y) => ctx.quadraticCurveTo(cx + jitter(), cy + jitter(), x + jitter(), y + jitter()), C = (c1x, c1y, c2x, c2y, x, y) => ctx.bezierCurveTo(c1x + jitter(), c1y + jitter(), c2x + jitter(), c2y + jitter(), x + jitter(), y + jitter());
     ctx.beginPath();
-    if (d === 0) {
-      ctx.ellipse(48 + jitter(), 48 + jitter(), 18 + rng()*3, 28 + rng()*3, randn(rng)*0.05, 0, Math.PI * 2);
-    } else if (d === 1) {
-      if (rng() < 0.55) { M(39, 29); L(48, 20); }
-      M(49, 20); L(48, 75);
-      if (rng() < 0.45) { M(38, 76); L(59, 76); }
-    } else if (d === 2) {
-      M(29, 30); Q(48, 16, 65, 29); Q(72, 41, 56, 51); L(30, 74); L(68, 74);
-    } else if (d === 3) {
-      M(31, 25); C(55, 13, 73, 28, 52, 45); C(76, 49, 69, 79, 30, 70);
-    } else if (d === 4) {
-      M(61, 19); L(61, 75); M(61, 20); L(30, 54); L(69, 54);
-    } else if (d === 5) {
-      M(67, 23); L(33, 23); L(30, 45); Q(47, 39, 61, 47); Q(75, 60, 60, 72); Q(46, 83, 29, 70);
-    } else if (d === 6) {
-      M(63, 23); C(35, 26, 28, 55, 37, 68); C(49, 86, 75, 72, 63, 54); C(52, 40, 29, 45, 35, 63);
-    } else if (d === 7) {
-      M(28, 24); L(70, 24); L(42, 76);
-      if (rng() < 0.25) { M(43, 49); L(58, 49); }
-    } else if (d === 8) {
-      ctx.ellipse(48 + jitter(), 34 + jitter(), 15 + rng()*2, 16 + rng()*2, randn(rng)*0.05, 0, Math.PI * 2);
-      ctx.moveTo(64, 60);
-      ctx.ellipse(48 + jitter(), 62 + jitter(), 17 + rng()*2, 18 + rng()*2, randn(rng)*0.05, 0, Math.PI * 2);
-    } else if (d === 9) {
-      M(61, 74); C(69, 46, 66, 24, 49, 20); C(26, 18, 25, 51, 47, 52); C(67, 53, 69, 28, 50, 21);
-    }
-    ctx.stroke();
-    ctx.restore();
+    if (d === 0) ctx.ellipse(56 + jitter(), 56 + jitter(), 20 + rng() * 4, 32 + rng() * 4, randn(rng) * 0.06, 0, Math.PI * 2);
+    else if (d === 1) { if (rng() < 0.60) { M(45, 35); L(55, 25); } M(56, 24); L(55, 88); if (rng() < 0.50) { M(43, 88); L(69, 88); } }
+    else if (d === 2) { M(34, 36); Q(56, 18, 78, 35); Q(87, 51, 66, 63); L(36, 87); L(80, 87); }
+    else if (d === 3) { M(37, 30); C(65, 15, 86, 35, 61, 53); C(91, 58, 81, 93, 36, 82); }
+    else if (d === 4) { M(72, 23); L(72, 89); M(71, 23); L(35, 62); L(82, 62); }
+    else if (d === 5) { M(79, 28); L(39, 28); L(35, 53); Q(55, 46, 73, 55); Q(90, 70, 70, 85); Q(53, 98, 34, 82); }
+    else if (d === 6) { M(75, 28); C(43, 30, 32, 65, 43, 81); C(58, 103, 88, 84, 73, 65); C(60, 48, 34, 54, 42, 76); }
+    else if (d === 7) { M(34, 29); L(83, 29); L(50, 90); if (rng() < 0.28) { M(51, 58); L(68, 58); } }
+    else if (d === 8) { ctx.ellipse(56 + jitter(), 40 + jitter(), 17 + rng() * 3, 18 + rng() * 3, randn(rng) * 0.06, 0, Math.PI * 2); ctx.moveTo(74, 70); ctx.ellipse(56 + jitter(), 72 + jitter(), 19 + rng() * 3, 21 + rng() * 3, randn(rng) * 0.06, 0, Math.PI * 2); }
+    else if (d === 9) { M(72, 88); C(82, 54, 78, 27, 58, 23); C(30, 21, 30, 59, 55, 61); C(79, 63, 83, 33, 60, 24); }
+    ctx.stroke(); ctx.restore();
   }
 
-  function drawFontDigit(ctx, d, rng) {
-    ctx.save();
-    transformContext(ctx, rng);
-    ctx.fillStyle = '#000000';
-    const fonts = ['Arial', 'Helvetica', 'Verdana', 'Trebuchet MS', 'Georgia', 'Times New Roman', 'Courier New', 'Comic Sans MS'];
-    const font = fonts[Math.floor(rng() * fonts.length)];
-    const weight = rng() < 0.55 ? '700' : '500';
-    const fsize = 66 + Math.floor(rng() * 11);
-    ctx.font = `${weight} ${fsize}px ${font}`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(String(d), 48 + randn(rng) * 1.5, 51 + randn(rng) * 2.0);
-    ctx.restore();
+  function drawAltPathDigit(ctx, d, rng) {
+    ctx.save(); transformContext(ctx, rng); ctx.strokeStyle = '#000000'; ctx.lineWidth = 9 + rng() * 7;
+    const jitter = () => randn(rng) * 1.6; const M = (x, y) => ctx.moveTo(x + jitter(), y + jitter()), L = (x, y) => ctx.lineTo(x + jitter(), y + jitter()), Q = (cx, cy, x, y) => ctx.quadraticCurveTo(cx + jitter(), cy + jitter(), x + jitter(), y + jitter()), C = (c1x, c1y, c2x, c2y, x, y) => ctx.bezierCurveTo(c1x + jitter(), c1y + jitter(), c2x + jitter(), c2y + jitter(), x + jitter(), y + jitter());
+    ctx.beginPath();
+    if (d === 0) { C(42, 22, 75, 22, 78, 55); C(80, 90, 44, 100, 35, 66); C(26, 34, 41, 22, 55, 22); }
+    else if (d === 1) { M(49, 34); L(59, 25); L(59, 88); }
+    else if (d === 2) { M(36, 39); C(45, 20, 82, 24, 77, 47); C(73, 65, 45, 67, 36, 88); L(82, 88); }
+    else if (d === 3) { M(39, 28); Q(83, 29, 60, 55); Q(91, 59, 72, 84); Q(52, 101, 34, 80); }
+    else if (d === 4) { M(36, 28); L(34, 63); L(83, 63); M(72, 32); L(72, 91); }
+    else if (d === 5) { M(78, 29); L(40, 29); L(39, 54); C(61, 47, 87, 59, 78, 79); C(70, 98, 43, 93, 35, 79); }
+    else if (d === 6) { M(75, 31); C(48, 29, 36, 53, 37, 76); C(39, 100, 78, 102, 80, 75); C(82, 54, 49, 51, 38, 77); }
+    else if (d === 7) { M(34, 30); L(82, 30); Q(66, 57, 52, 90); }
+    else if (d === 8) { C(48, 20, 77, 28, 72, 47); C(68, 63, 37, 56, 41, 38); C(45, 20, 74, 22, 72, 45); M(69, 55); C(91, 72, 69, 101, 45, 88); C(20, 74, 42, 48, 69, 55); }
+    else if (d === 9) { C(78, 48, 67, 20, 46, 28); C(24, 37, 36, 67, 61, 61); C(84, 56, 79, 29, 49, 27); M(74, 55); Q(70, 82, 48, 91); }
+    ctx.stroke(); ctx.restore();
   }
+
+  function drawFontDigit(ctx, d, rng, fontName) { ctx.save(); transformContext(ctx, rng); ctx.fillStyle = '#000000'; const weight = rng() < 0.55 ? '700' : '500'; const fontSize = 70 + randn(rng) * 5; ctx.font = `${weight} ${fontSize}px ${fontName}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(String(d), 56 + randn(rng) * 1.5, 58 + randn(rng) * 2.0); ctx.restore(); }
+  function canvasToTemplateVector(c) { return preprocessCanvas(c, false).vector; }
 
   function buildBaseTemplates() {
-    templatesByDigit = Array.from({ length: 10 }, () => []);
-    baseTemplates.length = 0;
-    const rng = mulberry32(20260624);
+    baseTemplates.length = 0; templatesByDigit = Array.from({ length: 10 }, () => []);
     for (let d = 0; d < 10; d++) {
-      for (let i = 0; i < 105; i++) {
-        const { c, ctx } = createTemplateCanvas();
-        if (i < 82) drawPathDigit(ctx, d, rng);
-        else drawFontDigit(ctx, d, rng);
-        const prep = preprocessCanvas(c, false);
-        if (!prep.blank) addTemplate(d, prep.vector, 'base');
-      }
+      for (let i = 0; i < 42; i++) { const rng = mulberry32(1000 + d * 10000 + i * 37), { c, ctx } = createTemplateCanvas(); drawPathDigit(ctx, d, rng); addTemplate(d, canvasToTemplateVector(c), 'base'); }
+      for (let i = 0; i < 30; i++) { const rng = mulberry32(2000 + d * 10000 + i * 53), { c, ctx } = createTemplateCanvas(); drawAltPathDigit(ctx, d, rng); addTemplate(d, canvasToTemplateVector(c), 'base'); }
+      const fonts = ['Arial, sans-serif', 'Helvetica, sans-serif', 'Verdana, sans-serif', 'Georgia, serif', '"Times New Roman", serif', '"Trebuchet MS", sans-serif', 'system-ui, sans-serif'];
+      for (let i = 0; i < 34; i++) { const rng = mulberry32(3000 + d * 10000 + i * 71), { c, ctx } = createTemplateCanvas(); drawFontDigit(ctx, d, rng, fonts[i % fonts.length]); addTemplate(d, canvasToTemplateVector(c), 'base'); }
     }
-    loadUserTemplates();
-    for (const t of userTemplates) {
-      const vec = Float32Array.from(t.vector);
-      addTemplate(t.digit, vec, 'user');
-    }
-    baseCount.textContent = String(baseTemplates.length);
-    userCount.textContent = String(userTemplates.length);
-    ready = true;
-    statusText.innerHTML = '<strong>Draw one digit, then classify.</strong><br />For best results, draw one large centered digit and close loops for 0, 6, 8, and 9.';
+    loadUserTemplates(); rebuildTemplateIndex();
   }
 
-  function loadUserTemplates() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      userTemplates = raw ? JSON.parse(raw) : [];
-      if (!Array.isArray(userTemplates)) userTemplates = [];
-    } catch (err) {
-      userTemplates = [];
-    }
-  }
+  function serializeVector(v) { return Array.from(v, x => Math.round(clamp01(x) * 1000) / 1000); }
+  function userAugmentations(vector) { const raw = [vector, shiftVector(vector, 1, 0), shiftVector(vector, -1, 0), shiftVector(vector, 0, 1), shiftVector(vector, 0, -1), shiftVector(vector, 1, 1), shiftVector(vector, -1, -1), shiftVector(vector, 1, -1), shiftVector(vector, -1, 1), rotateVector(vector, 3), rotateVector(vector, -3)]; if (vectorStats(vector).mass < 48) raw.push(thickenVector(vector, 0.16)); return raw; }
 
-  function saveUserTemplates() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(userTemplates));
-    userCount.textContent = String(userTemplates.length);
-  }
-
-  function rebuildWithUsers() {
-    templatesByDigit = Array.from({ length: 10 }, () => []);
-    for (const t of baseTemplates) templatesByDigit[t.digit].push(t);
-    for (const t of userTemplates) addTemplate(t.digit, Float32Array.from(t.vector), 'user');
-    userCount.textContent = String(userTemplates.length);
-  }
-
-  function addCurrentAsDigit(d) {
+  function addCurrentAsDigit(digit) {
     const prep = preprocessCanvas(drawCanvas, true);
-    if (prep.blank) {
-      statusText.innerHTML = '<strong>No example added.</strong><br />Draw a digit first, then press the correct label.';
-      return;
-    }
-    const vector = Array.from(prep.vector, x => Math.round(Math.max(0, Math.min(1, x)) * 1000) / 1000);
-    const item = { digit: d, vector, time: Date.now() };
-    userTemplates.push(item);
-    lastAdded = item;
-    // Limit to keep local storage small. Keep most recent examples.
-    if (userTemplates.length > 80) userTemplates = userTemplates.slice(userTemplates.length - 80);
-    saveUserTemplates();
-    rebuildWithUsers();
-    statusText.innerHTML = `<strong>Added your drawing as ${d}.</strong><br />This example is saved locally in this browser and will improve similar future drawings.`;
+    if (prep.blank) { statusText.innerHTML = '<strong>No digit detected.</strong><br />Draw a digit before saving an example.'; return; }
+    const batchId = `${Date.now()}-${Math.random().toString(16).slice(2)}`, vectors = userAugmentations(prep.vector);
+    for (const v of vectors) userTemplates.push({ digit, vector: serializeVector(v), time: Date.now(), batchId });
+    if (userTemplates.length > USER_TEMPLATE_LIMIT) userTemplates = userTemplates.slice(userTemplates.length - USER_TEMPLATE_LIMIT);
+    lastAddedBatchId = batchId; saveUserTemplates(); rebuildTemplateIndex();
+    statusText.innerHTML = `<strong>Saved as ${digit}.</strong><br />Added ${vectors.length} local variants for your drawing style.`;
     classifyCurrent(false);
   }
 
-  for (let d = 0; d < 10; d++) {
-    const btn = document.createElement('button');
-    btn.className = 'small';
-    btn.textContent = String(d);
-    btn.title = `Add current drawing as ${d}`;
-    btn.addEventListener('click', () => addCurrentAsDigit(d));
-    trainGrid.appendChild(btn);
-  }
-
-  undoExampleBtn.addEventListener('click', () => {
-    if (!lastAdded) {
-      statusText.innerHTML = '<strong>No recent added example to undo.</strong><br />Use a digit button after drawing to add an example.';
-      return;
-    }
-    const idx = userTemplates.findIndex(t => t.time === lastAdded.time && t.digit === lastAdded.digit);
-    if (idx >= 0) userTemplates.splice(idx, 1);
-    lastAdded = null;
-    saveUserTemplates();
-    rebuildWithUsers();
-    statusText.innerHTML = '<strong>Last added example removed.</strong><br />The local template set has been updated.';
-    classifyCurrent(false);
-  });
-
-  resetExamplesBtn.addEventListener('click', () => {
-    userTemplates = [];
-    lastAdded = null;
-    saveUserTemplates();
-    rebuildWithUsers();
-    statusText.innerHTML = '<strong>Saved examples reset.</strong><br />The classifier is back to the built-in template ensemble.';
-    classifyCurrent(false);
-  });
-
-  window.addEventListener('resize', () => {
-    const hadDrawing = false;
-    resizeMainCanvas();
-    if (!hadDrawing) clearCanvas();
-  });
-
-  updateBars(new Array(10).fill(0));
-  resizeMainCanvas();
-  clearCanvas();
-  // Let the first paint complete, then generate templates.
-  setTimeout(buildBaseTemplates, 80);
+  function saveUserTemplates() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(userTemplates)); } catch (err) { console.warn('Could not save user templates:', err); } }
+  function loadUserTemplates() { try { const raw = localStorage.getItem(STORAGE_KEY); if (!raw) { userTemplates = []; return; } const parsed = JSON.parse(raw); userTemplates = Array.isArray(parsed) ? parsed.filter(item => Number.isInteger(item.digit) && item.digit >= 0 && item.digit <= 9 && Array.isArray(item.vector) && item.vector.length === SIZE * SIZE).slice(-USER_TEMPLATE_LIMIT) : []; } catch (err) { console.warn('Could not load user templates:', err); userTemplates = []; } }
+  function undoLastExample() { if (userTemplates.length === 0) { statusText.innerHTML = '<strong>No saved examples to undo.</strong><br />Add an example first.'; return; } const targetBatch = lastAddedBatchId || userTemplates[userTemplates.length - 1].batchId || null; userTemplates = targetBatch ? userTemplates.filter(t => t.batchId !== targetBatch) : userTemplates.slice(0, -1); lastAddedBatchId = null; saveUserTemplates(); rebuildTemplateIndex(); statusText.innerHTML = '<strong>Removed the last saved example.</strong><br />The classifier has been updated.'; classifyCurrent(false); }
+  function resetExamples() { userTemplates = []; lastAddedBatchId = null; saveUserTemplates(); rebuildTemplateIndex(); statusText.innerHTML = '<strong>Saved examples reset.</strong><br />Only the built-in templates are now used.'; classifyCurrent(false); }
+  function buildTrainButtons() { trainGrid.innerHTML = ''; for (let d = 0; d < 10; d++) { const btn = document.createElement('button'); btn.className = 'small secondary'; btn.textContent = String(d); btn.title = `Save current drawing as ${d}`; btn.addEventListener('click', () => addCurrentAsDigit(d)); trainGrid.appendChild(btn); } }
+  undoExampleBtn.addEventListener('click', undoLastExample);
+  resetExamplesBtn.addEventListener('click', resetExamples);
+  function finishInit() { ready = true; classifyBtn.disabled = false; buildTrainButtons(); updateBars(new Array(10).fill(0)); clearCanvas(); statusText.innerHTML = '<strong>Ready.</strong><br />Draw one large digit, then classify. If wrong, click the correct digit to adapt locally.'; }
+  function init() { classifyBtn.disabled = true; resizeMainCanvas(); previewCtx.fillStyle = '#ffffff'; previewCtx.fillRect(0, 0, SIZE, SIZE); setTimeout(() => { buildBaseTemplates(); finishInit(); }, 20); }
+  window.addEventListener('resize', () => { resizeMainCanvas(); if (ready) classifyCurrent(false); });
+  init();
 })();
 </script>
 </body>
